@@ -1,9 +1,9 @@
-# Развёртывание Qwen3-VL-8B в LM Studio
+# Развёртывание Qwen3-8B в LM Studio
 
 ## 📋 Требования
 
 - **RAM:** 32 GB ✅
-- **VRAM:** 16 GB ✅
+- **VRAM:** 16 GB ✅ (модель использует ~8-10 GB)
 - **ОС:** Windows 10/11
 - **LM Studio:** версия 0.3.x или новее
 
@@ -20,22 +20,23 @@
 
 ---
 
-## 📥 Шаг 2: Загрузка модели Qwen3-VL-8B
+## 📥 Шаг 2: Загрузка модели Qwen3-8B
 
 ### Вариант A: Через интерфейс LM Studio
 
 1. Откройте LM Studio
 2. Перейдите на вкладку **"Discover"** (иконка лупы слева)
-3. В поиске введите: `qwen3-vl-8b`
-4. Найдите модель: **Qwen/Qwen3-VL-8B-Instruct-GGUF**
+3. В поиске введите: `qwen3-8b`
+4. Найдите модель: **Qwen/Qwen3-8B-GGUF** или **lmstudio-community/Qwen3-8B-GGUF**
 5. Выберите квантизацию:
    - **Q4_K_M** (~5 GB) — баланс качества и скорости
-   - **Q8_0** (~9 GB) — лучшее качество для 16 GB VRAM
+   - **Q6_K** (~7 GB) — хорошее качество
+   - **Q8_0** (~9 GB) — лучшее качество для 16 GB VRAM ✅ рекомендую
 6. Нажмите **Download**
 
 ### Вариант B: Скачать вручную с Hugging Face
 
-1. Перейдите: https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct-GGUF
+1. Перейдите: https://huggingface.co/Qwen/Qwen3-8B-GGUF
 2. Скачайте файл `.gguf` нужной квантизации
 3. Поместите в папку: `C:\Users\<ИМЯ>\.lmstudio\models\`
 
@@ -47,7 +48,7 @@
 
 1. Перейдите на вкладку **"Chat"** или **"Developer"**
 2. В верхней панели нажмите **"Select a model to load"**
-3. Выберите загруженную модель Qwen3-VL-8B
+3. Выберите загруженную модель Qwen3-8B
 4. Дождитесь загрузки (1-2 минуты)
 
 ### Рекомендуемые параметры
@@ -91,7 +92,7 @@ Invoke-RestMethod -Uri "http://localhost:1234/v1/models" -Method GET
 
 # Тестовый запрос
 $body = @{
-    model = "qwen3-vl-8b"
+    model = "qwen3-8b"
     messages = @(
         @{ role = "user"; content = "Привет! Объясни что такое Python?" }
     )
@@ -112,7 +113,7 @@ import requests
 response = requests.post(
     "http://localhost:1234/v1/chat/completions",
     json={
-        "model": "qwen3-vl-8b",
+        "model": "qwen3-8b",
         "messages": [
             {"role": "user", "content": "Привет! Что такое Python?"}
         ],
@@ -161,7 +162,7 @@ from langchain_openai import ChatOpenAI
 llm = ChatOpenAI(
     base_url="http://localhost:1234/v1",
     api_key="not-needed",  # LM Studio не требует ключ
-    model="qwen3-vl-8b",
+    model="qwen3-8b",
     temperature=0.5,
 )
 
@@ -172,52 +173,11 @@ print(response.content)
 
 ---
 
-## 🖼️ Работа с изображениями (Vision)
-
-Qwen3-VL поддерживает анализ изображений:
-
-```python
-import base64
-import requests
-
-# Кодирование изображения
-def encode_image(image_path):
-    with open(image_path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
-
-image_data = encode_image("screenshot.png")
-
-response = requests.post(
-    "http://localhost:1234/v1/chat/completions",
-    json={
-        "model": "qwen3-vl-8b",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Что изображено на картинке? Объясни код."},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{image_data}"
-                        }
-                    }
-                ]
-            }
-        ]
-    }
-)
-
-print(response.json()["choices"][0]["message"]["content"])
-```
-
----
-
 ## ⚠️ Решение проблем
 
 ### Модель не загружается
 
-- Проверьте, достаточно ли VRAM (нужно ~12 GB)
+- Проверьте, достаточно ли VRAM (нужно ~8-10 GB для Q8_0)
 - Попробуйте меньшую квантизацию (Q4_K_M вместо Q8_0)
 - Уменьшите Context Length до 4096
 
@@ -238,7 +198,7 @@ print(response.json()["choices"][0]["message"]["content"])
 ## ✅ Чеклист готовности
 
 - [ ] LM Studio установлен
-- [ ] Модель Qwen3-VL-8B скачана
+- [ ] Модель Qwen3-8B скачана
 - [ ] Модель загружена в память
 - [ ] Локальный сервер запущен (порт 1234)
 - [ ] API отвечает на тестовые запросы
@@ -249,7 +209,7 @@ print(response.json()["choices"][0]["message"]["content"])
 ## 📚 Полезные ссылки
 
 - [LM Studio Documentation](https://lmstudio.ai/docs)
-- [Qwen3-VL на Hugging Face](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct-GGUF)
+- [Qwen3-8B на Hugging Face](https://huggingface.co/Qwen/Qwen3-8B-GGUF)
 - [LangChain + Local LLMs](https://python.langchain.com/docs/integrations/llms/)
 
 ---
